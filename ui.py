@@ -16,6 +16,7 @@ marked_dots = []
 model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True)
 model.eval()
 count = 0
+kernelSize = 5
 # git.Git("/deepfillv2").clone("https://github.com/NATCHANONPAN/deepfillv2.git")
 
 COCO_INSTANCE_CATEGORY_NAMES = [
@@ -72,7 +73,6 @@ def instance_segmentation_api(img_path, marked_dots, threshold=0.5, rect_th=3, t
 def dilateImage(pillowImage):
   #cv2.MORPH_RECT,cv2.MORPH_CROSS,cv2.MORPH_ELLIPSE
   kernelShape = cv2.MORPH_RECT
-  kernelSize = 5
   opencvImage = cv2.cvtColor(np.array(pillowImage), cv2.COLOR_RGB2BGR)
   kernel = cv2.getStructuringElement(kernelShape,(kernelSize,kernelSize))
   outputImage = cv2.dilate(opencvImage, kernel, iterations=5)
@@ -106,7 +106,6 @@ def masking():
   panel.image = img_tk  
 
 def inpainting():
-  print("in")
   global count
   count += 1
   img = Image.open("whitedWithDilate.jpg")
@@ -166,6 +165,10 @@ def display_image_with_dots():
   panel.configure(image=img_tk)
   panel.image = img_tk
 
+def update_slice_value(val):
+  global kernelSize
+  kernelSize = int(val)
+
 root = tk.Tk()
 root.attributes('-fullscreen', True)
 
@@ -176,6 +179,10 @@ browse_button = tk.Button(root, text="Browse", command=browse_image)
 browse_button.pack()
 
 panel.bind("<Button-1>", mark_dot)
+
+slice_bar = tk.Scale(root, from_=1, to=9, orient=tk.HORIZONTAL, length=200, command=update_slice_value)
+slice_bar.set(kernelSize)
+slice_bar.pack()
 
 run_button = tk.Button(root, text="Mask", command=masking)
 run_button.pack()

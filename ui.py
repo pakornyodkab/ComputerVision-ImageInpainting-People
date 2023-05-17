@@ -18,6 +18,14 @@ model.eval()
 count = 0
 kernelSize = 5
 # git.Git("/deepfillv2").clone("https://github.com/NATCHANONPAN/deepfillv2.git")
+import random
+from loguru import logger
+from lama_cleaner.helper import (
+    resize_max_size,
+)
+import time
+from lama_cleaner.schema import Config
+from lama_cleaner.model_manager import ModelManager
 
 COCO_INSTANCE_CATEGORY_NAMES = [
   '__background__', 'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
@@ -63,12 +71,15 @@ def instance_segmentation_api(img_path, marked_dots, threshold=0.5, rect_th=3, t
   img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
   h, w = img.shape[:2]
   merged_mask = np.zeros((h, w), dtype=np.uint8)
+  merged_box = np.zeros((h, w), dtype=np.uint8)
+  print("boxes",boxes)
   for i in range(len(masks)):
     for dot in marked_dots:
       if masks[i][dot[1],dot[0]] != 0:
         img[masks[i] != 0] = [255,255,255]
         merged_mask[masks[i] != 0] = 255
-  return merged_mask, img
+        merged_box[round(boxes[i][0][1]):round(boxes[i][1][1]),round(boxes[i][0][0]):round(boxes[i][1][0])] = 255
+  return merged_mask, img ,merged_box
 
 def dilateImage(pillowImage):
   #cv2.MORPH_RECT,cv2.MORPH_CROSS,cv2.MORPH_ELLIPSE
@@ -90,11 +101,13 @@ def mark_dot(event):
 
 def masking():
   img = Image.open(image_path)
-  merged_mask, imgWhited = instance_segmentation_api(image_path, marked_dots)
+  merged_mask, imgWhited,merged_box = instance_segmentation_api(image_path, marked_dots)
   merged_maskImage = Image.fromarray(merged_mask)
   imgWhitedImage = Image.fromarray(imgWhited)
+  merge_boxImage = Image.fromarray(merged_box)
   imgWhitedImage.save("whited.jpg")
   merged_maskImage.save("mask.jpg")
+  merge_boxImage.save("box.jpg")
   merged_maskImage_dilate = dilateImage(merged_maskImage)
   merged_maskImage_dilate.save("mask_dilate.jpg")
 
@@ -103,7 +116,108 @@ def masking():
   img = Image.open("whitedWithDilate.jpg")
   img_tk = ImageTk.PhotoImage(img)
   panel.configure(image=img_tk)
-  panel.image = img_tk  
+  panel.image = img_tk
+
+def diffuser_callback(i, t, latents):
+  pass
+  # socketio.emit('diffusion_step', {'diffusion_step': step})
+
+def predict(image,mask):
+  image = np.array(image)
+  mask = np.array(mask)
+
+  original_shape = image.shape
+  interpolation = cv2.INTER_CUBIC
+  size_limit = max(image.shape)
+
+  config = Config(
+    ldm_steps=25,
+    ldm_sampler="plms",
+    hd_strategy="Crop",
+    zits_wireframe=True,
+    hd_strategy_crop_margin=196,
+    hd_strategy_crop_trigger_size=800,
+    hd_strategy_resize_limit=2048,
+    prompt="",
+    negative_prompt="",
+    use_croper=False,
+    croper_x=24,
+    croper_y=94,
+    croper_height=512,
+    croper_width=512,
+    sd_scale=1,
+    sd_mask_blur=5,
+    sd_strength=0.75,
+    sd_steps=50,
+    sd_guidance_scale=7.5,
+    sd_sampler="uni_pc",
+    sd_seed=-1,
+    sd_match_histograms=False,
+    cv2_flag="INPAINT_NS",
+    cv2_radius=5,
+    paint_by_example_steps=50,
+    paint_by_example_guidance_scale=7.5,
+    paint_by_example_mask_blur=5,
+    paint_by_example_seed=-1,
+    paint_by_example_match_histograms=False,
+    paint_by_example_example_image=None,
+    p2p_steps=50,
+    p2p_image_guidance_scale=1.5,
+    p2p_guidance_scale=7.5,
+    controlnet_conditioning_scale=0.4,
+  )
+
+  # LAMAModel = ModelManager(
+  #   name="lama",
+  #   device=torch.device('cpu')
+  # )
+
+
+  LAMAModel = ModelManager(
+    name="lama",
+    sd_controlnet=False,
+    device=torch.device('cpu'),
+    no_half=False,
+    hf_access_token="",
+    disable_nsfw=False,
+    sd_cpu_textencoder=False,
+    sd_run_local=False,
+    sd_local_model_path=None,
+    local_files_only=False,
+    cpu_offload=False,
+    enable_xformers=False,
+    callback=diffuser_callback,
+  )
+
+  if config.sd_seed == -1:
+    config.sd_seed = random.randint(1, 999999999)
+  if config.paint_by_example_seed == -1:
+    config.paint_by_example_seed = random.randint(1, 999999999)
+
+  logger.info(f"Origin image shape: {original_shape}")
+  image = resize_max_size(image, size_limit=size_limit, interpolation=interpolation)
+  logger.info(f"Resized image shape: {image.shape}")
+
+  mask = resize_max_size(mask, size_limit=size_limit, interpolation=interpolation)
+
+  start = time.time()
+  print("start  to inpaint")
+  try:
+    res_np_img = LAMAModel(image, mask, config)
+  except RuntimeError as e:
+    torch.cuda.empty_cache()
+    if "CUDA out of memory. " in str(e):
+      # NOTE: the string may change?
+      return None
+    else:
+      logger.exception(e)
+      return None
+  finally:
+    logger.info(f"process time: {(time.time() - start) * 1000}ms")
+    torch.cuda.empty_cache()
+
+  res_np_img = cv2.cvtColor(res_np_img.astype(np.uint8), cv2.COLOR_BGR2RGB)
+  return Image.fromarray(res_np_img)
 
 def inpainting():
   global count
@@ -111,14 +225,29 @@ def inpainting():
   img = Image.open("whitedWithDilate.jpg")
   mask_dilate = Image.open("mask_dilate.jpg")
 
-  use_cuda_if_available = True
+  use_cuda_if_available = False
   device = torch.device('cuda' if torch.cuda.is_available() and use_cuda_if_available else 'cpu')
-  sd_path = 'states_pt_places2.pth'
+  sd_path = 'states_deepfill.pth'
   generator = Generator(checkpoint=sd_path, return_flow=True).to(device)
   image_org = T.ToTensor()(img).to(device)
   mask = T.ToTensor()(mask_dilate).to(device)
   output = generator.infer(image_org, mask, return_vals=['inpainted', 'stage1', 'stage2', 'flow'])
   imgWhitedImage = Image.fromarray(output[0])
+  imgWhitedImage.save(f"result_{count}.jpg")
+
+  img = Image.open(f"result_{count}.jpg")
+  img_tk = ImageTk.PhotoImage(img)
+  panel.configure(image=img_tk)
+  panel.image = img_tk
+
+
+def inpaintingByLama():
+  global count
+  count += 1
+  img = Image.open("whitedWithDilate.jpg")
+  mask_dilate = Image.open("mask_dilate.jpg")
+
+  imgWhitedImage = predict(img,mask_dilate)
   imgWhitedImage.save(f"result_{count}.jpg")
 
   img = Image.open(f"result_{count}.jpg")
@@ -170,7 +299,7 @@ def update_slice_value(val):
   kernelSize = int(val)
 
 root = tk.Tk()
-root.attributes('-fullscreen', True)
+root.attributes('-fullscreen', False)
 
 panel = tk.Label(root)
 panel.pack()
@@ -196,6 +325,10 @@ frame2.pack()
 
 inpainting_button = tk.Button(frame2, text="Inpainting", command=inpainting)
 inpainting_button.grid(row=0, column=0)
+# run_button.pack()
+
+inpainting_by_lama_button = tk.Button(frame2, text="Inpainting By Lama", command=inpaintingByLama)
+inpainting_by_lama_button.grid(row=1, column=0)
 # run_button.pack()
 
 reinpainting_button = tk.Button(frame2, text="Re-Inpainting", command=reInpainting)

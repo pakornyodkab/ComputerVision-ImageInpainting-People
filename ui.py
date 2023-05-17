@@ -174,26 +174,36 @@ root.attributes('-fullscreen', True)
 
 panel = tk.Label(root)
 panel.pack()
+panel.bind("<Button-1>", mark_dot)
 
 browse_button = tk.Button(root, text="Browse", command=browse_image)
 browse_button.pack()
 
-panel.bind("<Button-1>", mark_dot)
+frame = tk.Frame(root)
+frame.pack()
 
-slice_bar = tk.Scale(root, from_=1, to=9, orient=tk.HORIZONTAL, length=200, command=update_slice_value)
+slice_bar = tk.Scale(frame, from_=1, to=9, orient=tk.HORIZONTAL, length=200, command=update_slice_value)
 slice_bar.set(kernelSize)
-slice_bar.pack()
+slice_bar.grid(row=0, column=0)
+# slice_bar.pack()
 
-run_button = tk.Button(root, text="Mask", command=masking)
-run_button.pack()
+mask_button = tk.Button(frame, text="Mask", command=masking)
+mask_button.grid(row=0, column=1)
+# run_button.pack()
 
-run_button = tk.Button(root, text="Inpainting", command=inpainting)
-run_button.pack()
+frame2 = tk.Frame(root)
+frame2.pack()
 
-run_button = tk.Button(root, text="Re-Inpainting", command=reInpainting)
-run_button.pack()
+inpainting_button = tk.Button(frame2, text="Inpainting", command=inpainting)
+inpainting_button.grid(row=0, column=0)
+# run_button.pack()
 
-clear_button = tk.Button(root, text="Clear Dots", command=clear_dots)
-clear_button.pack()
+reinpainting_button = tk.Button(frame2, text="Re-Inpainting", command=reInpainting)
+reinpainting_button.grid(row=0, column=1)
+# run_button.pack()
+
+clear_button = tk.Button(frame2, text="Clear Dots", command=clear_dots)
+clear_button.grid(row=0, column=2)
+# clear_button.pack()
 
 root.mainloop()

@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cv2
 from torchvision import transforms as T
-# import git
+import git
 from deepfillv2.model.networks import Generator
 
 image_path = ""
@@ -17,7 +17,7 @@ model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True)
 model.eval()
 count = 0
 kernelSize = 5
-# git.Git("/deepfillv2").clone("https://github.com/NATCHANONPAN/deepfillv2.git")
+# git.Git("/lama-cleaner").clone("https://github.com/Sanster/lama-cleaner")x
 import random
 from loguru import logger
 from lama_cleaner.helper import (
@@ -58,6 +58,8 @@ def get_prediction(img_path, threshold):
   return masks, pred_boxes, pred_class
 
 def browse_image():
+  global marked_dots
+  marked_dots = []
   global image_path
   image_path = filedialog.askopenfilename(initialdir="/", title="Select Image", filetypes=(("Image Files", "*.jpg *.png *.jpeg"),))
   img = Image.open(image_path)
@@ -227,7 +229,7 @@ def inpainting():
 
   use_cuda_if_available = False
   device = torch.device('cuda' if torch.cuda.is_available() and use_cuda_if_available else 'cpu')
-  sd_path = 'states_deepfill.pth'
+  sd_path = 'states_pt_places2.pth'
   generator = Generator(checkpoint=sd_path, return_flow=True).to(device)
   image_org = T.ToTensor()(img).to(device)
   mask = T.ToTensor()(mask_dilate).to(device)
@@ -244,7 +246,7 @@ def inpainting():
 def inpaintingByLama():
   global count
   count += 1
-  img = Image.open("whitedWithDilate.jpg")
+  img = Image.open(image_path)
   mask_dilate = Image.open("mask_dilate.jpg")
 
   imgWhitedImage = predict(img,mask_dilate)
@@ -328,15 +330,15 @@ inpainting_button.grid(row=0, column=0)
 # run_button.pack()
 
 inpainting_by_lama_button = tk.Button(frame2, text="Inpainting By Lama", command=inpaintingByLama)
-inpainting_by_lama_button.grid(row=1, column=0)
+inpainting_by_lama_button.grid(row=0, column=1)
 # run_button.pack()
 
 reinpainting_button = tk.Button(frame2, text="Re-Inpainting", command=reInpainting)
-reinpainting_button.grid(row=0, column=1)
+reinpainting_button.grid(row=0, column=2)
 # run_button.pack()
 
 clear_button = tk.Button(frame2, text="Clear Dots", command=clear_dots)
-clear_button.grid(row=0, column=2)
+clear_button.grid(row=0, column=3)
 # clear_button.pack()
 
 root.mainloop()

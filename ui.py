@@ -314,6 +314,10 @@ def update_slice_value(val):
   global kernelSize
   kernelSize = int(val)
 
+def download_image():
+  img = Image.open(f"result_{count}.jpg")
+  img.save("save-result.jpg")
+
 root = tk.Tk()
 root.attributes('-fullscreen', False)
 
@@ -349,8 +353,8 @@ frame2.pack()
 inpainting_button = tk.Button(frame2, text="Inpainting", command=inpainting)
 inpainting_button.pack(side=tk.LEFT)
 
-reinpainting_button = tk.Button(frame2, text="Re-Inpainting", command=reInpainting)
-reinpainting_button.pack(side=tk.LEFT)
+inpainting_by_lama_button = tk.Button(frame2, text="Inpainting By Lama", command=inpaintingByLama)
+inpainting_by_lama_button.pack(side=tk.LEFT)
 
 clear_button = tk.Button(frame2, text="Clear Dots", command=clear_dots)
 clear_button.pack(side=tk.LEFT)
@@ -358,11 +362,14 @@ clear_button.pack(side=tk.LEFT)
 frame3 = tk.Frame(frame)
 frame3.pack()
 
-inpainting_by_lama_button = tk.Button(frame3, text="Inpainting By Lama", command=inpaintingByLama)
-inpainting_by_lama_button.pack(side=tk.LEFT)
+reinpainting_button = tk.Button(frame3, text="Re-Inpainting", command=reInpainting)
+reinpainting_button.pack(side=tk.LEFT)
 
 reinpainting_by_lama_button = tk.Button(frame3, text="Re-Inpainting by Lama", command=reInpaintingByLama)
 reinpainting_by_lama_button.pack(side=tk.LEFT)
+
+download_button = tk.Button(frame, text="Download Image", command=download_image)
+download_button.pack(pady=10)
 
 def update_canvas_scrollregion(event):
     canvas.configure(scrollregion=canvas.bbox("all"))

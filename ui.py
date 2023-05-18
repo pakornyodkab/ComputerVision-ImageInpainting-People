@@ -280,6 +280,20 @@ def reInpainting():
   panel.configure(image=img_tk)
   panel.image = img_tk
 
+def reInpaintingByLama():
+  global count
+  img = Image.open(f"result_{count}.jpg")
+  mask_dilate = Image.open("mask_dilate.jpg")
+  count += 1
+
+  imgWhitedImage = predict(img,mask_dilate)
+  imgWhitedImage.save(f"result_{count}.jpg")
+
+  img = Image.open(f"result_{count}.jpg")
+  img_tk = ImageTk.PhotoImage(img)
+  panel.configure(image=img_tk)
+  panel.image = img_tk
+
 def clear_dots():
   global marked_dots
   marked_dots = []
@@ -335,14 +349,20 @@ frame2.pack()
 inpainting_button = tk.Button(frame2, text="Inpainting", command=inpainting)
 inpainting_button.pack(side=tk.LEFT)
 
-inpainting_by_lama_button = tk.Button(frame2, text="Inpainting By Lama", command=inpaintingByLama)
-inpainting_by_lama_button.pack(side=tk.LEFT)
-
 reinpainting_button = tk.Button(frame2, text="Re-Inpainting", command=reInpainting)
 reinpainting_button.pack(side=tk.LEFT)
 
 clear_button = tk.Button(frame2, text="Clear Dots", command=clear_dots)
 clear_button.pack(side=tk.LEFT)
+
+frame3 = tk.Frame(frame)
+frame3.pack()
+
+inpainting_by_lama_button = tk.Button(frame3, text="Inpainting By Lama", command=inpaintingByLama)
+inpainting_by_lama_button.pack(side=tk.LEFT)
+
+reinpainting_by_lama_button = tk.Button(frame3, text="Re-Inpainting by Lama", command=reInpaintingByLama)
+reinpainting_by_lama_button.pack(side=tk.LEFT)
 
 def update_canvas_scrollregion(event):
     canvas.configure(scrollregion=canvas.bbox("all"))

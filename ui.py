@@ -303,42 +303,50 @@ def update_slice_value(val):
 root = tk.Tk()
 root.attributes('-fullscreen', False)
 
-panel = tk.Label(root)
+canvas = tk.Canvas(root)
+canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+scrollbar = tk.Scrollbar(root, command=canvas.yview)
+scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+canvas.configure(yscrollcommand=scrollbar.set)
+canvas.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+
+frame = tk.Frame(canvas)
+canvas.create_window((0, 0), window=frame, anchor="nw")
+
+panel = tk.Label(frame)
 panel.pack()
 panel.bind("<Button-1>", mark_dot)
 
-browse_button = tk.Button(root, text="Browse", command=browse_image)
+browse_button = tk.Button(frame, text="Browse", command=browse_image)
 browse_button.pack()
-
-frame = tk.Frame(root)
-frame.pack()
 
 slice_bar = tk.Scale(frame, from_=1, to=9, orient=tk.HORIZONTAL, length=200, command=update_slice_value)
 slice_bar.set(kernelSize)
-slice_bar.grid(row=0, column=0)
-# slice_bar.pack()
+slice_bar.pack()
 
 mask_button = tk.Button(frame, text="Mask", command=masking)
-mask_button.grid(row=0, column=1)
-# run_button.pack()
+mask_button.pack()
 
-frame2 = tk.Frame(root)
+frame2 = tk.Frame(frame)
 frame2.pack()
 
 inpainting_button = tk.Button(frame2, text="Inpainting", command=inpainting)
-inpainting_button.grid(row=0, column=0)
-# run_button.pack()
+inpainting_button.pack(side=tk.LEFT)
 
 inpainting_by_lama_button = tk.Button(frame2, text="Inpainting By Lama", command=inpaintingByLama)
-inpainting_by_lama_button.grid(row=0, column=1)
-# run_button.pack()
+inpainting_by_lama_button.pack(side=tk.LEFT)
 
 reinpainting_button = tk.Button(frame2, text="Re-Inpainting", command=reInpainting)
-reinpainting_button.grid(row=0, column=2)
-# run_button.pack()
+reinpainting_button.pack(side=tk.LEFT)
 
 clear_button = tk.Button(frame2, text="Clear Dots", command=clear_dots)
-clear_button.grid(row=0, column=3)
-# clear_button.pack()
+clear_button.pack(side=tk.LEFT)
+
+def update_canvas_scrollregion(event):
+    canvas.configure(scrollregion=canvas.bbox("all"))
+
+frame.bind("<Configure>", update_canvas_scrollregion)
 
 root.mainloop()

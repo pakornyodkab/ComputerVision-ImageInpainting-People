@@ -111,13 +111,15 @@ def inpaintByLaMa(image, mask):
     return res_np_img
 
 
-pixelwise_loss = torch.nn.L1Loss()
+pixelwise_loss = torch.nn.L1Loss(reduction='sum')
 
 directory = './evaluateSource/image'
 deepfillPretrainLosses = []
 deepfillFinetuneLosses = []
 lamaLosses = []
 transform = transforms.ToTensor()
+h=256
+w=256
 
 start = time.time()
 
@@ -128,12 +130,12 @@ for index,filename in enumerate(os.listdir(directory)):
     mask_f = os.path.join('./evaluateSource/mask/',filename)
 
     image = Image.open(f)
-    image = image.resize((256,256))
+    image = image.resize((h,w))
     image = np.array(image)
     # image = cv2.imread(f)
     # image = cv2.cvtColor(image,cv2.COLOR_BGR2RGB)
     mask = Image.open(mask_f)
-    mask = mask.resize((256,256))
+    mask = mask.resize((h,w))
     mask = np.array(mask)
     mask = cv2.cvtColor(mask,cv2.COLOR_RGB2GRAY)
     # mask = cv2.imread(mask_f)
@@ -152,7 +154,8 @@ for index,filename in enumerate(os.listdir(directory)):
 
     # deepfillPretrainLosses.append(deepfillPretrainLoss)
     # deepfillFinetuneLosses.append(deepfillFinetuneLoss)
-    lamaLosses.append(lamaLoss)
+    lamaLosses.append(lamaLoss.item()/np.sum(np.where(mask == 255,1,0)))
+
 
 end = time.time()
 

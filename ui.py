@@ -9,7 +9,7 @@ import cv2
 from torchvision import transforms as T
 import git
 from deepfillv2.model.networks import Generator
-
+from scipy import stats as st
 image_path = ""
 marked_dots = []
 
@@ -67,6 +67,34 @@ def browse_image():
   panel.configure(image=img_tk)
   panel.image = img_tk
     
+def get_mask_labels(img, human_mask):
+
+  img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+  img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
+  ret2,th2 = cv2.threshold(img[:,:,2],0,255,cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
+  # for i in range(th2.shape[0]):
+  #   for j in range(th2.shape[1]):
+  #     if human_mask[i][j] > 0:
+  #       th2[i][j] = 255
+  analysis = cv2.connectedComponentsWithStats(th2,4,cv2.CV_32S)
+  (totalLabels, label_ids, values, centroid) = analysis
+  new_human_mask = np.where(human_mask > 0, 1, 0)
+  labels = []
+  for i in range(new_human_mask.shape[0]):
+    for j in range(new_human_mask.shape[1]):
+      if new_human_mask[i][j]:
+        labels.append(label_ids[i][j])
+  mode = st.mode(labels).mode[0]
+  if mode != 0:
+    final_mask = np.array(np.where(label_ids == mode, 255, 0), dtype = np.uint8)
+    for i in range(new_human_mask.shape[0]):
+      for j in range(new_human_mask.shape[1]):
+        if new_human_mask[i][j] > 0:
+          final_mask[i][j] = 255
+  else:
+    final_mask = np.where(human_mask > 0, 255, 0)
+  return final_mask
+
 def instance_segmentation_api(img_path, marked_dots, threshold=0.5, rect_th=3, text_size=3, text_th=3):
   masks, boxes, pred_cls = get_prediction(img_path, threshold)
   img = cv2.imread(img_path)
@@ -74,12 +102,12 @@ def instance_segmentation_api(img_path, marked_dots, threshold=0.5, rect_th=3, t
   h, w = img.shape[:2]
   merged_mask = np.zeros((h, w), dtype=np.uint8)
   merged_box = np.zeros((h, w), dtype=np.uint8)
-  print("boxes",boxes)
   for i in range(len(masks)):
     for dot in marked_dots:
       if masks[i][dot[1],dot[0]] != 0:
-        img[masks[i] != 0] = [255,255,255]
-        merged_mask[masks[i] != 0] = 255
+        final_mask = get_mask_labels(img,masks[i])
+        img[final_mask != 0] = [255,255,255]
+        merged_mask[final_mask != 0] = 255
         merged_box[round(boxes[i][0][1]):round(boxes[i][1][1]),round(boxes[i][0][0]):round(boxes[i][1][0])] = 255
   return merged_mask, img ,merged_box
 
@@ -106,6 +134,7 @@ def masking():
   img = Image.open(image_path)
   merged_mask, imgWhited,merged_box = instance_segmentation_api(image_path, marked_dots)
   merged_maskImage = Image.fromarray(merged_mask)
+  # merged_maskImage = ImageOps.invert(merged_maskImage)
   imgWhitedImage = Image.fromarray(imgWhited)
   merge_boxImage = Image.fromarray(merged_box)
   imgWhitedImage.save("whited.jpg")

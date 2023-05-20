@@ -67,25 +67,31 @@ def browse_image():
   panel.configure(image=img_tk)
   panel.image = img_tk
     
-def get_mask_labels(img, human_mask):
+
+def get_mask_labels(img, human_mask, bboxes):
 
   img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
   img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
   ret2,th2 = cv2.threshold(img[:,:,2],0,255,cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
-  # for i in range(th2.shape[0]):
-  #   for j in range(th2.shape[1]):
-  #     if human_mask[i][j] > 0:
-  #       th2[i][j] = 255
+  cv2.imwrite("th2.jpg",th2)
+  for i in range(int(bboxes[0][1])):
+    for j in range(th2.shape[1]):
+      th2[i][j] = 0
+  for i in range(th2.shape[0]):
+    for j in range(th2.shape[1]):
+      if human_mask[i][j] > 0:
+        th2[i][j] = 255
   analysis = cv2.connectedComponentsWithStats(th2,4,cv2.CV_32S)
   (totalLabels, label_ids, values, centroid) = analysis
   new_human_mask = np.where(human_mask > 0, 1, 0)
   labels = []
   for i in range(new_human_mask.shape[0]):
     for j in range(new_human_mask.shape[1]):
-      if new_human_mask[i][j]:
+      if new_human_mask[i][j] > 0:
         labels.append(label_ids[i][j])
   mode = st.mode(labels).mode[0]
-  if mode != 0:
+  human_area = np.sum(np.concatenate(new_human_mask))
+  if mode != 0 and values[mode][-1] < 2 * human_area:
     final_mask = np.array(np.where(label_ids == mode, 255, 0), dtype = np.uint8)
     for i in range(new_human_mask.shape[0]):
       for j in range(new_human_mask.shape[1]):
@@ -105,7 +111,7 @@ def instance_segmentation_api(img_path, marked_dots, threshold=0.5, rect_th=3, t
   for i in range(len(masks)):
     for dot in marked_dots:
       if masks[i][dot[1],dot[0]] != 0:
-        final_mask = get_mask_labels(img,masks[i])
+        final_mask = get_mask_labels(img,masks[i],boxes[i])
         img[final_mask != 0] = [255,255,255]
         merged_mask[final_mask != 0] = 255
         merged_box[round(boxes[i][0][1]):round(boxes[i][1][1]),round(boxes[i][0][0]):round(boxes[i][1][0])] = 255

@@ -99,6 +99,7 @@ def mergeImageWithDilateMask(pillowImage,pillowDilateMask):
 
 def mark_dot(event):
   marked_dots.append((event.x, event.y))
+  setState(2)
   display_image_with_dots()
 
 def masking():
@@ -119,6 +120,7 @@ def masking():
   img_tk = ImageTk.PhotoImage(img)
   panel.configure(image=img_tk)
   panel.image = img_tk
+  setState(3)
 
 def diffuser_callback(i, t, latents):
   pass
@@ -241,7 +243,7 @@ def inpainting():
   img_tk = ImageTk.PhotoImage(img)
   panel.configure(image=img_tk)
   panel.image = img_tk
-
+  setState(4)
 
 def inpaintingByLama():
   global count
@@ -256,6 +258,7 @@ def inpaintingByLama():
   img_tk = ImageTk.PhotoImage(img)
   panel.configure(image=img_tk)
   panel.image = img_tk
+  setState(5)
 
 def reInpainting():
   global count
@@ -294,10 +297,14 @@ def reInpaintingByLama():
   panel.configure(image=img_tk)
   panel.image = img_tk
 
-def clear_dots():
+def clear():
   global marked_dots
   marked_dots = []
-  display_image_with_dots()
+  global image_path
+  image_path = ''
+  # display_image_with_dots()
+  panel.configure(image='')
+  setState(1)
 
 def display_image_with_dots():
   img = Image.open(image_path)
@@ -318,6 +325,57 @@ def download_image():
   img = Image.open(f"result_{count}.jpg")
   img.save("save-result.jpg")
 
+def setState(state):
+  if state == 1:
+    browse_button.pack()
+    slice_bar.pack_forget()
+    mask_button.pack_forget()
+    inpainting_button.pack_forget()
+    inpainting_by_lama_button.pack_forget()
+    clear_button.pack()
+    reinpainting_button.pack_forget()
+    reinpainting_by_lama_button.pack_forget()
+    download_button.pack_forget()
+  elif state == 2:
+    browse_button.pack_forget()
+    slice_bar.pack()
+    mask_button.pack()
+    inpainting_button.pack_forget()
+    inpainting_by_lama_button.pack_forget()
+    clear_button.pack()
+    reinpainting_button.pack_forget()
+    reinpainting_by_lama_button.pack_forget()
+    download_button.pack_forget()
+  elif state == 3:
+    browse_button.pack_forget()
+    slice_bar.pack_forget()
+    mask_button.pack_forget()
+    inpainting_button.pack()
+    inpainting_by_lama_button.pack()
+    clear_button.pack()
+    reinpainting_button.pack_forget()
+    reinpainting_by_lama_button.pack_forget()
+    download_button.pack_forget()
+  elif state == 4:
+    browse_button.pack_forget()
+    slice_bar.pack_forget()
+    mask_button.pack_forget()
+    inpainting_button.pack_forget()
+    inpainting_by_lama_button.pack_forget()
+    clear_button.pack()
+    reinpainting_button.pack()
+    reinpainting_by_lama_button.pack_forget()
+    download_button.pack()
+  elif state == 5:
+    browse_button.pack_forget()
+    slice_bar.pack_forget()
+    mask_button.pack_forget()
+    inpainting_button.pack_forget()
+    inpainting_by_lama_button.pack_forget()
+    clear_button.pack()
+    reinpainting_button.pack_forget()
+    reinpainting_by_lama_button.pack()
+    download_button.pack()
 root = tk.Tk()
 root.attributes('-fullscreen', False)
 
@@ -347,33 +405,27 @@ slice_bar.pack()
 mask_button = tk.Button(frame, text="Mask", command=masking)
 mask_button.pack()
 
-frame2 = tk.Frame(frame)
-frame2.pack()
+inpainting_button = tk.Button(frame, text="Inpainting", command=inpainting)
+inpainting_button.pack()
 
-inpainting_button = tk.Button(frame2, text="Inpainting", command=inpainting)
-inpainting_button.pack(side=tk.LEFT)
+inpainting_by_lama_button = tk.Button(frame, text="Inpainting By Lama", command=inpaintingByLama)
+inpainting_by_lama_button.pack()
 
-inpainting_by_lama_button = tk.Button(frame2, text="Inpainting By Lama", command=inpaintingByLama)
-inpainting_by_lama_button.pack(side=tk.LEFT)
+clear_button = tk.Button(frame, text="Clear", command=clear)
+clear_button.pack()
 
-clear_button = tk.Button(frame2, text="Clear Dots", command=clear_dots)
-clear_button.pack(side=tk.LEFT)
+reinpainting_button = tk.Button(frame, text="Re-Inpainting", command=reInpainting)
+reinpainting_button.pack()
 
-frame3 = tk.Frame(frame)
-frame3.pack()
-
-reinpainting_button = tk.Button(frame3, text="Re-Inpainting", command=reInpainting)
-reinpainting_button.pack(side=tk.LEFT)
-
-reinpainting_by_lama_button = tk.Button(frame3, text="Re-Inpainting by Lama", command=reInpaintingByLama)
-reinpainting_by_lama_button.pack(side=tk.LEFT)
+reinpainting_by_lama_button = tk.Button(frame, text="Re-Inpainting by Lama", command=reInpaintingByLama)
+reinpainting_by_lama_button.pack()
 
 download_button = tk.Button(frame, text="Download Image", command=download_image)
-download_button.pack(pady=10)
+download_button.pack()
 
 def update_canvas_scrollregion(event):
     canvas.configure(scrollregion=canvas.bbox("all"))
 
 frame.bind("<Configure>", update_canvas_scrollregion)
-
+setState(1)
 root.mainloop()

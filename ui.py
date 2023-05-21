@@ -452,7 +452,7 @@ slice_bar.pack()
 mask_button = tk.Button(frame, text="Mask", command=masking)
 mask_button.pack()
 
-inpainting_button = tk.Button(frame, text="Inpainting", command=inpainting)
+inpainting_button = tk.Button(frame, text="Inpainting By Deepfill", command=inpainting)
 inpainting_button.pack()
 
 inpainting_by_lama_button = tk.Button(frame, text="Inpainting By Lama", command=inpaintingByLama)
@@ -461,7 +461,7 @@ inpainting_by_lama_button.pack()
 clear_button = tk.Button(frame, text="Clear", command=clear)
 clear_button.pack()
 
-reinpainting_button = tk.Button(frame, text="Re-Inpainting", command=reInpainting)
+reinpainting_button = tk.Button(frame, text="Re-Inpainting By Deepfill", command=reInpainting)
 reinpainting_button.pack()
 
 reinpainting_by_lama_button = tk.Button(frame, text="Re-Inpainting by Lama", command=reInpaintingByLama)

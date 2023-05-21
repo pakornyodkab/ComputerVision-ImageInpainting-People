@@ -39,3 +39,4 @@ Result
 - Pakorn Kongrit 6230409421
 - Natchanon Panthuwadeethorn 6231321021
 - napat ittidej 6231319821
+- Puttinart Puapisit 6231345021

@@ -143,10 +143,9 @@ for index,filename in enumerate(os.listdir(directory)):
     mask = Image.open(mask_f)
     mask = mask.resize((h,w))
     mask = np.array(mask)
-    maskDeepfill = copy.deepcopy(mask)
     mask = cv2.cvtColor(mask,cv2.COLOR_RGB2GRAY)
-    # mask = cv2.imread(mask_f)
-    # mask = cv2.cvtColor(mask,cv2.COLOR_BGR2RGB)
+    maskDeepfill = cv2.imread(mask_f)
+    maskDeepfill = cv2.cvtColor(maskDeepfill,cv2.COLOR_BGR2RGB)
 
     deepfillPretrain = inpaintByDeepfillV2Pretrain(image,maskDeepfill)
     deepfillFinetune = inpaintByDeepfillV2Finetune(image,maskDeepfill)

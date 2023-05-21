@@ -35,6 +35,10 @@ Result
 - ถ้าคนอยู่ติดกันหลายๆคน จะมีปัญหาเรื่อง segmentation เงา
 - ถ้าคนถือ object อื่นอยู่ จะทำการลบแค่คน ไม่ลบ object ที่ถือออกไปด้วย
 
+## Pretrained Weight
+- DeepfillV2 https://drive.google.com/u/0/uc?id=1L63oBNVgz7xSb_3hGbUdkYW1IuRgMkCa&export=download
+- Partial Convolution https://drive.google.com/file/d/1sooo-BLSNRUGWG_AB-lxh7xHgJ2bS29a/view
+
 ## Members
 - Pakorn Kongrit 6230409421
 - Natchanon Panthuwadeethorn 6231321021

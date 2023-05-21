@@ -14,6 +14,8 @@ import numpy as np
 import os
 from PIL import Image
 import torchvision.transforms as transforms
+import argparse
+from partialconv.predict import predict
 
 def inpaintByDeepfillV2(img, mask,path):
     use_cuda_if_available = False
@@ -117,6 +119,7 @@ directory = './evaluateSource/image'
 deepfillPretrainLosses = []
 deepfillFinetuneLosses = []
 lamaLosses = []
+partialConvoLosses = []
 transform = transforms.ToTensor()
 h=256
 w=256
@@ -128,6 +131,8 @@ for index,filename in enumerate(os.listdir(directory)):
     print("Filename",filename)
     f = os.path.join(directory,filename)
     mask_f = os.path.join('./evaluateSource/mask/',filename)
+    mask_black_f = os.path.join('./evaluateSource/maskBlack/',filename)
+    pretrainPartivalConvoPath = os.path.join('./partialconv/','pretrained_pconv.pth')
 
     image = Image.open(f)
     image = image.resize((h,w))
@@ -144,14 +149,20 @@ for index,filename in enumerate(os.listdir(directory)):
     deepfillPretrain = inpaintByDeepfillV2Pretrain(image,mask)
     deepfillFinetune = inpaintByDeepfillV2Finetune(image,mask)
     lama = inpaintByLaMa(image,mask)
+    args = argparse.Namespace(img=f, mask=mask_black_f,model=pretrainPartivalConvoPath, resize=True, gpu_id=0)
+    partialConvoImage = predict(args)
+    partialConvoImage = Image.fromarray(partialConvoImage).resize((h,w))
+    partialConvoImage = np.array(partialConvoImage)
 
     deepfillPretrainLoss = pixelwise_loss(transform(deepfillPretrain) , transform(image))
     deepfillFinetuneLoss = pixelwise_loss(transform(deepfillFinetune) , transform(image))
     lamaLoss = pixelwise_loss(transform(lama),transform(image))
+    partialConvoLoss = pixelwise_loss(transform(partialConvoImage),transform(image))
 
     deepfillPretrainLosses.append(deepfillPretrainLoss.item()/np.sum(np.where(mask == 255,1,0)))
     deepfillFinetuneLosses.append(deepfillFinetuneLoss.item()/np.sum(np.where(mask == 255,1,0)))
     lamaLosses.append(lamaLoss.item()/np.sum(np.where(mask == 255,1,0)))
+    partialConvoLosses.append(partialConvoLoss.item()/np.sum(np.where(mask == 255,1,0)))
 
 
 end = time.time()
@@ -159,6 +170,7 @@ end = time.time()
 print("DeepfillV2 Pretrained loss",sum(deepfillPretrainLosses)/len(deepfillPretrainLosses))
 print("DeepfillV2 Fine tune loss",sum(deepfillFinetuneLosses)/len(deepfillFinetuneLosses))
 print("Lama Loss",sum(lamaLosses)/len(lamaLosses))
+print("Partial Convolution Loss",sum(partialConvoLosses)/len(partialConvoLosses))
 
 print("Time use",end-start)
 

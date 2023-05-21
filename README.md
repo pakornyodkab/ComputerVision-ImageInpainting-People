@@ -39,6 +39,21 @@ Result
 - DeepfillV2 https://drive.google.com/u/0/uc?id=1L63oBNVgz7xSb_3hGbUdkYW1IuRgMkCa&export=download
 - Partial Convolution https://drive.google.com/file/d/1sooo-BLSNRUGWG_AB-lxh7xHgJ2bS29a/view
 
+## Install Dependency
+```commandline
+pip install -r requirements.txt
+```
+
+## Run
+```commandline
+python ui.py
+```
+
+## Evaluate
+```commandline
+python evaluate.py
+```
+
 ## Members
 - Pakorn Kongrit 6230409421
 - Natchanon Panthuwadeethorn 6231321021

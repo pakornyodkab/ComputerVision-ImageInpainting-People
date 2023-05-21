@@ -16,6 +16,7 @@ from PIL import Image
 import torchvision.transforms as transforms
 import argparse
 from partialconv.predict import predict
+import copy
 
 def inpaintByDeepfillV2(img, mask,path):
     use_cuda_if_available = False
@@ -142,12 +143,13 @@ for index,filename in enumerate(os.listdir(directory)):
     mask = Image.open(mask_f)
     mask = mask.resize((h,w))
     mask = np.array(mask)
+    maskDeepfill = copy.deepcopy(mask)
     mask = cv2.cvtColor(mask,cv2.COLOR_RGB2GRAY)
     # mask = cv2.imread(mask_f)
     # mask = cv2.cvtColor(mask,cv2.COLOR_BGR2RGB)
 
-    deepfillPretrain = inpaintByDeepfillV2Pretrain(image,mask)
-    deepfillFinetune = inpaintByDeepfillV2Finetune(image,mask)
+    deepfillPretrain = inpaintByDeepfillV2Pretrain(image,maskDeepfill)
+    deepfillFinetune = inpaintByDeepfillV2Finetune(image,maskDeepfill)
     lama = inpaintByLaMa(image,mask)
     args = argparse.Namespace(img=f, mask=mask_black_f,model=pretrainPartivalConvoPath, resize=True, gpu_id=0)
     partialConvoImage = predict(args)

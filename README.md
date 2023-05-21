@@ -26,8 +26,8 @@ Method
 
 Result
 - ทำการ evaluate ด้วย L1 loss ของ pytorch
-  - DeepfillV2 Pretrained loss 0.8166848302622002
-  - DeepfillV2 Fine tune loss 0.8542238303130104
+  - DeepfillV2 Pretrained loss 0.0030107644280890377
+  - DeepfillV2 Fine tune loss 0.003131956909006509
   - Lama Loss 0.19175073754598923
   - Partial Convolution Loss 0.8016573508714017
 ## Discussion and Future Work

@@ -9,7 +9,7 @@
 - ถ้าหากมีเงาของคนที่ต้องการจะลบในบริเวณนอกเหนือจากที่เลือกไว้ จะต้องสามารถลบได้ 
 
 ## Related Works
-- Instance Segmentation: ใช้ Mask R-CNN pretrain on coco dataset
+- Instance Segmentation: ใช้ Mask R-CNN pretrain on coco dataset https://github.com/matterport/Mask_RCNN
 - Image Inpainting
   - deepfillv2 https://github.com/NATCHANONPAN/deepfillv2
   - lama https://github.com/Sanster/lama-cleaner

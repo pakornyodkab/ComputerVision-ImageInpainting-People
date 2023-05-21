@@ -34,3 +34,8 @@ Result
 - ถ้า mask มีขนาดเล็ก ไม่ครอบคลุมทั้งหมดของคนจะทำให้ inpainting ไม่ดีเท่าที่ควร
 - ถ้าคนอยู่ติดกันหลายๆคน จะมีปัญหาเรื่อง segmentation เงา
 - ถ้าคนถือ object อื่นอยู่ จะทำการลบแค่คน ไม่ลบ object ที่ถือออกไปด้วย
+
+## Members
+- Pakorn Kongrit 6230409421
+- Natchanon Panthuwadeethorn 6231321021
+- napat ittidej 6231319821

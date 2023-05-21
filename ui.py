@@ -274,8 +274,8 @@ def inpainting():
   global count
   count += 1
   img = Image.open("whitedWithDilate.jpg")
-  mask_dilate = Image.open("mask_dilate.jpg")
-  mask_dilate = mask_dilate.convert('RGB')
+  mask_dilate = cv2.imread('mask_dilate.jpg')
+  mask_dilate = cv2.cvtColor(mask_dilate,cv2.COLOR_BGR2RGB)
   use_cuda_if_available = False
   device = torch.device('cuda' if torch.cuda.is_available() and use_cuda_if_available else 'cpu')
   sd_path = 'states_pt_places2.pth'

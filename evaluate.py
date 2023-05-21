@@ -146,7 +146,7 @@ for index,filename in enumerate(os.listdir(directory)):
     mask = cv2.cvtColor(mask,cv2.COLOR_RGB2GRAY)
     maskDeepfill = cv2.imread(mask_f)
     maskDeepfill = cv2.cvtColor(maskDeepfill,cv2.COLOR_BGR2RGB)
-
+    maskDeepfill = cv2.resize(maskDeepfill,(h,w))
     deepfillPretrain = inpaintByDeepfillV2Pretrain(image,maskDeepfill)
     deepfillFinetune = inpaintByDeepfillV2Finetune(image,maskDeepfill)
     lama = inpaintByLaMa(image,mask)
@@ -160,8 +160,8 @@ for index,filename in enumerate(os.listdir(directory)):
     lamaLoss = pixelwise_loss(transform(lama),transform(image))
     partialConvoLoss = pixelwise_loss(transform(partialConvoImage),transform(image))
 
-    deepfillPretrainLosses.append(deepfillPretrainLoss.item()/np.sum(np.where(mask == 255,1,0)))
-    deepfillFinetuneLosses.append(deepfillFinetuneLoss.item()/np.sum(np.where(mask == 255,1,0)))
+    deepfillPretrainLosses.append(deepfillPretrainLoss.item()/np.sum(np.where(np.where(cv2.cvtColor(maskDeepfill,cv2.COLOR_RGB2GRAY) == 255,1,0))))
+    deepfillFinetuneLosses.append(deepfillFinetuneLoss.item()/np.sum(np.where(np.where(cv2.cvtColor(maskDeepfill,cv2.COLOR_RGB2GRAY) == 255,1,0))))
     lamaLosses.append(lamaLoss.item()/np.sum(np.where(mask == 255,1,0)))
     partialConvoLosses.append(partialConvoLoss.item()/np.sum(np.where(mask == 255,1,0)))
 

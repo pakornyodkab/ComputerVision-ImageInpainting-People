@@ -73,14 +73,26 @@ def get_mask_labels(img, human_mask, bboxes):
   img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
   img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
   ret2,th2 = cv2.threshold(img[:,:,2],0,255,cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
-  cv2.imwrite("th2.jpg",th2)
-  for i in range(int(bboxes[0][1])):
-    for j in range(th2.shape[1]):
-      th2[i][j] = 0
+
+  mask_out = np.where(human_mask > 0,  0, 1)
+  th2 = th2 * mask_out
+  th2 = np.uint8(th2)
+  analyze = cv2.connectedComponentsWithStats(th2,4,cv2.CV_32S)
+
+  human_c_y, human_c_x = int((bboxes[0][1]+bboxes[1][1])/2), int((bboxes[0][0]+bboxes[1][0])/2)
+  (totalLabels, label_ids, values, centroid) = analyze
+  for i in range(len(centroid)):
+    y, x = int(centroid[i][1]), int(centroid[i][0])
+    if y < human_c_y:
+      mask_out = np.where(label_ids == i,  0, 1)
+      th2 = th2 * mask_out
+
   for i in range(th2.shape[0]):
     for j in range(th2.shape[1]):
       if human_mask[i][j] > 0:
         th2[i][j] = 255
+
+  th2 = np.uint8(th2)
   analysis = cv2.connectedComponentsWithStats(th2,4,cv2.CV_32S)
   (totalLabels, label_ids, values, centroid) = analysis
   new_human_mask = np.where(human_mask > 0, 1, 0)

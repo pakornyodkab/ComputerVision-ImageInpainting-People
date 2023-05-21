@@ -17,7 +17,7 @@ model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True)
 model.eval()
 count = 0
 kernelSize = 5
-# git.Git("/lama-cleaner").clone("https://github.com/Sanster/lama-cleaner")x
+# git.Git("/partialconv").clone("https://github.com/pakornyodkab/partialconv")
 import random
 from loguru import logger
 from lama_cleaner.helper import (
@@ -275,7 +275,7 @@ def inpainting():
   count += 1
   img = Image.open("whitedWithDilate.jpg")
   mask_dilate = Image.open("mask_dilate.jpg")
-
+  mask_dilate = mask_dilate.convert('RGB')
   use_cuda_if_available = False
   device = torch.device('cuda' if torch.cuda.is_available() and use_cuda_if_available else 'cpu')
   sd_path = 'states_pt_places2.pth'
@@ -297,7 +297,6 @@ def inpaintingByLama():
   count += 1
   img = Image.open(image_path)
   mask_dilate = Image.open("mask_dilate.jpg")
-
   imgWhitedImage = predict(img,mask_dilate)
   imgWhitedImage.save(f"result_{count}.jpg")
 
@@ -311,6 +310,7 @@ def reInpainting():
   global count
   image = Image.open(f"result_{count}.jpg")
   mask = Image.open("mask_dilate.jpg")
+  mask = mask.convert('RGB')
   mask = mask.resize(image.size)
   inv_mask = ImageOps.invert(mask)
   result = Image.composite(image, Image.new('RGB', image.size, (255, 255, 255)), inv_mask)

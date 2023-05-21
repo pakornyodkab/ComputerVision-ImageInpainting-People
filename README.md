@@ -14,6 +14,7 @@
 - Image Inpainting
   - deepfillv2 https://github.com/NATCHANONPAN/deepfillv2
   - lama https://github.com/Sanster/lama-cleaner
+  - Partial Convolution https://github.com/pakornyodkab/partialconv
 
 ## Method and Results
 Method

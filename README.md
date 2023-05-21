@@ -9,17 +9,26 @@
 - ถ้าหากมีเงาของคนที่ต้องการจะลบในบริเวณนอกเหนือจากที่เลือกไว้ จะต้องสามารถลบได้ 
 
 ## Related Works
-- Instance Segmentation: ใช้ Mask R-CNN pretrain on coco dataset https://github.com/matterport/Mask_RCNN
+- Instance Segmentation: ใช้ Mask R-CNN pretrain on coco dataset 
+  - Mask R-CNN https://github.com/matterport/Mask_RCNN
 - Image Inpainting
   - deepfillv2 https://github.com/NATCHANONPAN/deepfillv2
   - lama https://github.com/Sanster/lama-cleaner
 
 ## Method and Results
-เอา instance segmentation มาหาเงาเพิ่ม จากนั้นนำมาต่อกัน inpainting model โดยการใช้ ui ในการรับพิกัดที่ต้องการจะลบคนออก จากนั้นเช็ค instance segmentation ว่า mask ไหนที่มีพิกัดนั้นอยู่ ก็จะทำการลบคนตรงนั้นออก แล้วส่ง รูปที่ลบคนแล้วกับ mask ให้ inpainting model ไปเติมรูปภาพให้สมบูรณ์
-evaluate ด้วย l1 loss pytorch
-- DeepfillV2 Pretrained loss 0.8166848302622002
-- DeepfillV2 Fine tune loss 0.8542238303130104
-- Lama Loss 0.19175073754598923
+Method
+1. instance segmentation หา mask ของคนทั้งหมด
+2. ใช้ ui รับ dot ของคนที่ user ต้องการเอาออก
+3. หา mask ของคนที่ถูก dot และหาเงาของคนคนนั้นไปใส่ใน mask ผลลัพธ์ที่จะนำไปใช้ตอน inpaint
+3. นำ mask และ รูปต้นฉบับ ส่งไปให้ inpainting model ทำการลบคนแล้วเติมพื้นหลัง
+5. inpainting model ไปเติมรูปภาพให้สมบูรณ์ แล้วคืนรูปที่ลบคนออกไปแล้วกลับมาให้ ui แสดงผล
+
+Result
+- ทำการ evaluate ด้วย L1 loss ของ pytorch
+  - DeepfillV2 Pretrained loss 0.8166848302622002
+  - DeepfillV2 Fine tune loss 0.8542238303130104
+  - Lama Loss 0.19175073754598923
 ## Discussion and Future Work
 - ถ้า mask มีขนาดเล็ก ไม่ครอบคลุมทั้งหมดของคนจะทำให้ inpainting ไม่ดีเท่าที่ควร
 - ถ้าคนอยู่ติดกันหลายๆคน จะมีปัญหาเรื่อง segmentation เงา
+- ถ้าคนถือ object อื่นอยู่ จะทำการลบแค่คน ไม่ลบ object ที่ถือออกไปด้วย

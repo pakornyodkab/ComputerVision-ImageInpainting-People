@@ -28,10 +28,10 @@ def inpaintByDeepfillV2(img, mask,path):
     return output[0]
 
 def inpaintByDeepfillV2Pretrain(img,mask):
-    inpaintByDeepfillV2(img,mask,'states_pt_places2.pth')
+    return inpaintByDeepfillV2(img,mask,'states_pt_places2.pth')
 
 def inpaintByDeepfillV2Finetune(img, mask):
-    inpaintByDeepfillV2(img,mask,'states_deepfill.pth')
+    return inpaintByDeepfillV2(img,mask,'states_deepfill.pth')
 
 
 def diffuser_callback(i, t, latents):
@@ -141,26 +141,23 @@ for index,filename in enumerate(os.listdir(directory)):
     # mask = cv2.imread(mask_f)
     # mask = cv2.cvtColor(mask,cv2.COLOR_BGR2RGB)
 
-    # deepfillPretrain = inpaintByDeepfillV2Pretrain(image,mask)
-    # deepfillFinetune = inpaintByDeepfillV2Finetune(image,mask)
+    deepfillPretrain = inpaintByDeepfillV2Pretrain(image,mask)
+    deepfillFinetune = inpaintByDeepfillV2Finetune(image,mask)
     lama = inpaintByLaMa(image,mask)
 
-    # print("Lama type",type(lama.dtype))
-    # print("Image type",type(image.dtype))
-
-    # deepfillPretrainLoss = pixelwise_loss(deepfillPretrain , image)
-    # deepfillFinetuneLoss = pixelwise_loss(deepfillFinetune , image)
+    deepfillPretrainLoss = pixelwise_loss(transform(deepfillPretrain) , transform(image))
+    deepfillFinetuneLoss = pixelwise_loss(transform(deepfillFinetune) , transform(image))
     lamaLoss = pixelwise_loss(transform(lama),transform(image))
 
-    # deepfillPretrainLosses.append(deepfillPretrainLoss)
-    # deepfillFinetuneLosses.append(deepfillFinetuneLoss)
+    deepfillPretrainLosses.append(deepfillPretrainLoss.item()/np.sum(np.where(mask == 255,1,0)))
+    deepfillFinetuneLosses.append(deepfillFinetuneLoss.item()/np.sum(np.where(mask == 255,1,0)))
     lamaLosses.append(lamaLoss.item()/np.sum(np.where(mask == 255,1,0)))
 
 
 end = time.time()
 
-# print("DeepfillV2 Pretrained loss",sum(deepfillPretrainLosses)/len(deepfillPretrainLosses))
-# print("DeepfillV2 Fine tune loss",sum(deepfillFinetuneLosses)/len(deepfillFinetuneLosses))
+print("DeepfillV2 Pretrained loss",sum(deepfillPretrainLosses)/len(deepfillPretrainLosses))
+print("DeepfillV2 Fine tune loss",sum(deepfillFinetuneLosses)/len(deepfillFinetuneLosses))
 print("Lama Loss",sum(lamaLosses)/len(lamaLosses))
 
 print("Time use",end-start)

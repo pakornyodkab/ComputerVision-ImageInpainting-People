@@ -10,7 +10,9 @@
 
 ## Related Works
 - Instance Segmentation: ใช้ Mask R-CNN pretrain on coco dataset
-- Image Inpainting: ใช้ deepfillv2, lama
+- Image Inpainting
+  - deepfillv2 https://github.com/NATCHANONPAN/deepfillv2
+  - lama https://github.com/Sanster/lama-cleaner
 
 ## Method and Results
 evaluate ด้วย l1 loss pytorch

@@ -15,6 +15,7 @@
   - lama https://github.com/Sanster/lama-cleaner
 
 ## Method and Results
+เอา instance segmentation มาหาเงาเพิ่ม จากนั้นนำมาต่อกัน inpainting model โดยการใช้ ui ในการรับพิกัดที่ต้องการจะลบคนออก จากนั้นเช็ค instance segmentation ว่า mask ไหนที่มีพิกัดนั้นอยู่ ก็จะทำการลบคนตรงนั้นออก แล้วส่ง รูปที่ลบคนแล้วกับ mask ให้ inpainting model ไปเติมรูปภาพให้สมบูรณ์
 evaluate ด้วย l1 loss pytorch
 - DeepfillV2 Pretrained loss 0.8166848302622002
 - DeepfillV2 Fine tune loss 0.8542238303130104

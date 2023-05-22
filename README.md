@@ -25,6 +25,8 @@ Method
 5. inpainting model ไปเติมรูปภาพให้สมบูรณ์ แล้วคืนรูปที่ลบคนออกไปแล้วกลับมาให้ ui แสดงผล
 
 Result
+- ทำการ evaluate AP ของ Mask RCNN บน COCO dataset class person
+  - Mask R-CNN AP 34.8
 - ทำการ evaluate ด้วย L1 loss ของ pytorch
   - DeepfillV2 Pretrained loss 0.0030107644280890377
   - DeepfillV2 Fine tune loss 0.003131956909006509
